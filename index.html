@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instruction Cycle Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 25px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #2980b9;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #16a085;
+            margin-top: 25px;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .highlight-box {
+            background-color: #e8f4fc;
+            padding: 15px 20px;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+        .concept-box {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .instruction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+        .instruction-table th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .instruction-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .instruction-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .instruction-table tr:hover {
+            background-color: #e3f2fd;
+        }
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .phase {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .conclusion {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #2ecc71;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Instruction Cycle and Von Neumann Architecture</h1>
+    
+    <h2>الاسم : هند رياض مراد</h2>
+    <h2>ID: 42024641</h2>
+
+
+    <div class="highlight-box">
+        <p><strong></strong> In this report, we will thoroughly explain the concept of the Instruction Cycle, which is considered the core of any operation within a computer. We will also discuss the key elements of the classical architecture (Von Neumann Architecture) and understand how software programs are translated into instructions that control the hardware using the Control Unit (CU).</p>
+    </div>
+
+    <h2>1. Overview of Computer Functions and Component Connections</h2>
+    <p>A computer consists of interconnected components that work together to execute programs. These components include:</p>
+    <ul>
+        <li>Control Unit (CU)</li>
+        <li>Arithmetic Logic Unit (ALU)</li>
+        <li>Main Memory</li>
+        <li>Input/Output Units (I/O Units)</li>
+    </ul>
+
+    <h2>2. Von Neumann Architecture</h2>
+    <p>Most modern computers are based on this architecture, which is built on three key principles:</p>
+    <ol>
+        <li>Storing data and instructions in the same readable/writable memory.</li>
+        <li>Accessing any memory location using a direct address, regardless of content type.</li>
+        <li>Executing instructions sequentially, unless altered by control instructions (e.g., jump).</li>
+    </ol>
+
+    <h2>3. Program Concept</h2>
+    <p>There are two approaches to building systems that perform specific tasks:</p>
+    
+    <div class="concept-box">
+        <h3>A. Special-Purpose Hardware</h3>
+        <ul>
+            <li>Logical components are connected in a specific way to perform one dedicated task.</li>
+            <li>To change the task, hardware rewiring is required → not flexible.</li>
+        </ul>
+    </div>
+    
+    <div class="concept-box">
+        <h3>B. General-Purpose Hardware</h3>
+        <ul>
+            <li>A general system is built and programmed using control signals sent through software commands.</li>
+            <li>Flexible, as functionality can be changed by altering the program.</li>
+        </ul>
+    </div>
+
+    <h2>4. What is a Program?</h2>
+    <p>A program is simply:</p>
+    <ul>
+        <li>A sequence of steps,</li>
+        <li>Each step performs an arithmetic or logical operation,</li>
+        <li>Each operation is linked to a specific opcode (e.g., ADD = 9D, MOVE = E3).</li>
+    </ul>
+    <p>The Control Unit (CU) receives the opcode and generates the corresponding control signals.</p>
+
+    <h2>5. Main Computer Components and Their Functions</h2>
+    <ul>
+        <li><strong>Control Unit (CU):</strong> Interprets instructions and generates control signals.</li>
+        <li><strong>Arithmetic Logic Unit (ALU):</strong> Performs logical and arithmetic operations.</li>
+        <li><strong>Main Memory (MM):</strong> Temporarily stores data and instructions.</li>
+        <li><strong>Input/Output Units (I/O):</strong> Interact with the user and peripheral devices.</li>
+    </ul>
+
+    <h2>6. The Instruction Cycle</h2>
+    <p>It consists of two main phases:</p>
+    
+    <div class="highlight-box">
+        <h3>A. Fetch Cycle</h3>
+        <p><strong>Program Counter (PC):</strong> Holds the address of the next instruction.</p>
+        <p><strong>Steps:</strong></p>
+        <ol>
+            <li>The processor reads the instruction from the memory location pointed to by the PC.</li>
+            <li>The instruction is loaded into the Instruction Register (IR).</li>
+            <li>The PC is incremented automatically.</li>
+        </ol>
+    </div>
+    
+    <div class="highlight-box">
+        <h3>B. Execute Cycle</h3>
+        <p>The processor interprets the instruction in the IR and performs one of the following based on the instruction type:</p>
+        <ul>
+            <li>Transfer data between memory and CPU.</li>
+            <li>Execute arithmetic or logical operations.</li>
+            <li>Transfer data to/from I/O units.</li>
+            <li>Control the program flow (e.g., jump).</li>
+        </ul>
+    </div>
+
+    <h2>7. Graphical Representation of the Instruction Cycle</h2>
+    <p>An example is used to illustrate the cycle:</p>
+    <p><strong>Instruction:</strong> Add locA, R0<br>
+    <strong>Assumptions:</strong> Memory at locA = 7, R0 = 10</p>
+    <p><strong>Execution Steps:</strong></p>
+    <ol>
+        <li>PC = 1200 → Instruction is fetched.</li>
+        <li>Instruction is loaded into IR.</li>
+        <li>Interpreted as: "Add the value at locA to R0."</li>
+        <li>Value at locA is fetched from memory.</li>
+        <li>Operation executed: R0 = R0 + locA = 10 + 7 = 17</li>
+    </ol>
+
+    <h2>8. Hypothetical Machine</h2>
+    <p>An example of a hypothetical machine is introduced to demonstrate how instructions are built:</p>
+    <ul>
+        <li>Each instruction consists of an opcode and a memory address.</li>
+    </ul>
+    <p><strong>Examples of Instructions:</strong><br>
+    0001: Load AC from memory<br>
+    0101: Add to AC from memory</p>
+    <p><strong>Important CPU Registers:</strong></p>
+    <ul>
+        <li>PC (Program Counter)</li>
+        <li>IR (Instruction Register)</li>
+        <li>AC (Accumulator)</li>
+    </ul>
+
+    <h2>9. Instruction Set Table</h2>
+    <table class="instruction-table">
+        <thead>
+            <tr>
+                <th>Binary Opcode</th>
+                <th>Instruction Name</th>
+                <th> Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>0001</td>
+                <td>LOAD AC from memory</td>
+                <td>Load the value from memory into the AC register</td>
+            </tr>
+            <tr>
+                <td>0010</td>
+                <td>STORE AC to memory</td>
+                <td>Store the AC value into memory</td>
+            </tr>
+            <tr>
+                <td>0101</td>
+                <td>ADD to AC from memory</td>
+                <td>Add a memory value to the AC register</td>
+            </tr>
+            <tr>
+                <td>0110</td>
+                <td>SUB from AC from memory</td>
+                <td>Subtract a memory value from the AC register</td>
+            </tr>
+            <tr>
+                <td>1000</td>
+                <td>JUMP to address</td>
+                <td>Jump to a specific memory address</td>
+            </tr>
+            <tr>
+                <td>1001</td>
+                <td>JUMP if AC is zero</td>
+                <td>Jump if AC equals zero</td>
+            </tr>
+            <tr>
+                <td>1010</td>
+                <td>INPUT to AC</td>
+                <td>Take input into the AC register</td>
+            </tr>
+            <tr>
+                <td>1011</td>
+                <td>OUTPUT from AC</td>
+                <td>Output AC value to the screen</td>
+            </tr>
+            <tr>
+                <td>1111</td>
+                <td>HALT</td>
+                <td>Stop program execution</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="conclusion">
+        <p>The instruction cycle is the heart of how a computer operates. By understanding how an instruction is fetched, decoded, and executed, we gain insight into how programs work behind the scenes. This foundational knowledge is essential in the study of computer architecture, performance enhancement, and processor development.</p>
+    </div>
+</body>
+</html>
