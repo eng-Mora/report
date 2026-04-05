@@ -1,272 +1,677 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instruction Cycle Report</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.7;
-            color: #333;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 25px;
-            background-color: #f8f9fa;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-        }
-        h2 {
-            color: #2980b9;
-            border-left: 4px solid #3498db;
-            padding-left: 10px;
-            margin-top: 30px;
-        }
-        h3 {
-            color: #16a085;
-            margin-top: 25px;
-        }
-        p {
-            margin-bottom: 15px;
-        }
-        .highlight-box {
-            background-color: #e8f4fc;
-            padding: 15px 20px;
-            border-radius: 5px;
-            border-left: 4px solid #3498db;
-            margin: 20px 0;
-        }
-        .concept-box {
-            background-color: #fff8e1;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #ffc107;
-            margin: 20px 0;
-        }
-        .instruction-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-        }
-        .instruction-table th {
-            background-color: #3498db;
-            color: white;
-            padding: 12px;
-            text-align: left;
-        }
-        .instruction-table td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #ddd;
-        }
-        .instruction-table tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        .instruction-table tr:hover {
-            background-color: #e3f2fd;
-        }
-        ul, ol {
-            padding-left: 20px;
-            margin-bottom: 20px;
-        }
-        li {
-            margin-bottom: 8px;
-        }
-        .phase {
-            font-weight: bold;
-            color: #e74c3c;
-        }
-        .conclusion {
-            background-color: #e8f5e9;
-            padding: 20px;
-            border-radius: 5px;
-            border-left: 4px solid #2ecc71;
-            margin-top: 30px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📋 إدارة الفورمات — The Process</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<style>
+:root{
+  --primary:#800000;--pl:#a00000;--gold:#D4AF37;
+  --bg:#f0f2f5;--card:#fff;--border:#e0e0e0;
+  --text:#2c2c2c;--muted:#777;--danger:#dc3545;--success:#28a745;--info:#007bff;--purple:#6f42c1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);direction:rtl;min-height:100vh;}
+
+/* ── Auth ── */
+#authScreen{position:fixed;inset:0;background:linear-gradient(135deg,#0B0C2A,#1a1a4e 50%,#800000);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.auth-card{background:#fff;border-radius:20px;padding:3rem 2.5rem;width:400px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.auth-card h1{color:var(--primary);margin-bottom:.4rem;font-size:1.8rem;}
+.auth-card p{color:var(--muted);margin-bottom:1.8rem;font-size:.95rem;}
+.auth-input{width:100%;padding:.85rem 1rem;border:2px solid var(--border);border-radius:10px;font-family:Tajawal,sans-serif;font-size:1rem;margin-bottom:.9rem;transition:border-color .2s;}
+.auth-input:focus{outline:none;border-color:var(--primary);}
+.auth-btn{width:100%;padding:.9rem;background:var(--primary);color:#fff;border:none;border-radius:10px;font-family:Tajawal,sans-serif;font-size:1.05rem;font-weight:700;cursor:pointer;transition:background .2s;}
+.auth-btn:hover{background:var(--pl);}
+.auth-btn:disabled{background:#aaa;cursor:not-allowed;}
+#authError{color:var(--danger);margin-top:.6rem;font-size:.9rem;min-height:1.2rem;}
+
+/* ── App ── */
+#app{display:none;}
+header{background:linear-gradient(135deg,#800000,#2c3e50);color:#fff;padding:1.1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.header-title{font-size:1.35rem;font-weight:800;}
+.header-title span{color:var(--gold);}
+.header-right{display:flex;align-items:center;gap:.8rem;}
+.admin-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);padding:.3rem .8rem;border-radius:20px;font-size:.78rem;direction:ltr;}
+.btn-logout{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:.45rem 1rem;border-radius:8px;cursor:pointer;font-family:Tajawal,sans-serif;font-size:.88rem;}
+.btn-logout:hover{background:rgba(255,255,255,.25);}
+
+.container{max-width:1100px;margin:0 auto;padding:2rem 1rem;}
+
+/* ── Tabs ── */
+.tab-nav{display:flex;gap:.5rem;margin-bottom:1.8rem;background:#fff;border-radius:14px;padding:.5rem;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+.tab-btn{flex:1;padding:.7rem 1rem;border:none;border-radius:10px;font-family:Tajawal,sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;color:#777;background:transparent;transition:all .2s;}
+.tab-btn.active{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(128,0,0,.25);}
+.tab-btn:not(.active):hover{background:#f5f5f5;color:#333;}
+
+/* ── Card ── */
+.card{background:var(--card);border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.07);overflow:hidden;margin-bottom:1.5rem;}
+.card-header{padding:1.1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--border);}
+.card-header h2{font-size:1.05rem;color:var(--primary);display:flex;align-items:center;gap:.5rem;}
+.card-body{padding:1.5rem;}
+
+/* ── Buttons ── */
+.btn{padding:.6rem 1.3rem;border:none;border-radius:10px;cursor:pointer;font-family:Tajawal,sans-serif;font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--pl);}
+.btn-secondary{background:#2c3e50;color:#fff;}
+.btn-secondary:hover{background:#3d5166;}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{background:#5a32a3;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover{background:#218838;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-danger:hover{background:#c82333;}
+.btn-sm{padding:.35rem .75rem;font-size:.82rem;border-radius:7px;}
+.btn-icon{background:#f0f0f0;color:#555;border:none;padding:.35rem .6rem;border-radius:7px;cursor:pointer;transition:all .2s;}
+.btn-icon:hover{background:#ddd;}
+.btn-icon.blue{background:#e8f4fd;color:var(--info);}
+.btn-icon.blue:hover{background:var(--info);color:#fff;}
+.btn-icon.red{background:#fde8e8;color:var(--danger);}
+.btn-icon.red:hover{background:var(--danger);color:#fff;}
+.btn-icon.green{background:#d4edda;color:var(--success);}
+.btn-icon.green:hover{background:var(--success);color:#fff;}
+.btn-icon.purple{background:#f0e8fd;color:var(--purple);}
+.btn-icon.purple:hover{background:var(--purple);color:#fff;}
+
+/* ── Forms list ── */
+.forms-grid{display:grid;gap:1rem;}
+.form-card{background:#fff;border-radius:14px;border:2px solid var(--border);padding:1.2rem 1.5rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;transition:border-color .2s;flex-wrap:wrap;}
+.form-card:hover{border-color:#c0c0c0;}
+.form-card.inactive{opacity:.65;}
+.form-info h3{font-size:1rem;margin-bottom:.25rem;color:var(--text);}
+.form-info p{font-size:.82rem;color:var(--muted);}
+.form-actions{display:flex;gap:.4rem;flex-wrap:wrap;}
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:.78rem;font-weight:700;}
+.badge-green{background:#d4edda;color:#155724;}
+.badge-gray{background:#f0f0f0;color:#555;}
+.badge-red{background:#fde8e8;color:#800000;}
+.badge-purple{background:#f0e8fd;color:var(--purple);}
+.badge-blue{background:#e8f4fd;color:var(--info);}
+
+/* ── Question Builder ── */
+.q-list{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1rem;}
+.q-item{background:#f8f9fa;border:1.5px solid var(--border);border-radius:12px;padding:1rem 1.2rem;}
+.q-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
+.q-item-header span{font-size:.8rem;font-weight:700;color:var(--muted);}
+.q-item p{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.3rem;}
+.q-item .options-preview{font-size:.82rem;color:var(--muted);}
+.q-type-badge{font-size:.72rem;padding:2px 8px;border-radius:8px;font-weight:700;}
+.q-type-mcq{background:#e8f4fd;color:var(--info);}
+.q-type-text{background:#f0e8fd;color:var(--purple);}
+
+/* ── Responses ── */
+.responses-grid{display:flex;flex-direction:column;gap:.7rem;}
+.response-card{background:#f8f9fa;border:1.5px solid var(--border);border-radius:12px;padding:1rem 1.3rem;cursor:pointer;transition:border-color .2s;}
+.response-card:hover{border-color:#aaa;}
+.response-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.response-header h4{font-size:.95rem;font-weight:700;}
+.response-detail{margin-top:.8rem;display:none;}
+.response-detail.open{display:block;}
+.answer-row{padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.88rem;}
+.answer-row:last-child{border-bottom:none;}
+.answer-row .q-text{color:var(--muted);font-size:.8rem;margin-bottom:.2rem;}
+.answer-row .a-text{font-weight:600;color:var(--text);}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem;}
+.modal{background:#fff;border-radius:18px;padding:2rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.modal h2{color:var(--primary);margin-bottom:1.5rem;font-size:1.25rem;}
+.form-group{margin-bottom:1rem;}
+.form-group label{display:block;font-weight:700;margin-bottom:.4rem;font-size:.88rem;color:#555;}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:.7rem 1rem;border:2px solid var(--border);border-radius:10px;font-family:Tajawal,sans-serif;font-size:.95rem;color:var(--text);transition:border-color .2s;}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--primary);}
+.modal-footer{display:flex;gap:.8rem;justify-content:flex-end;margin-top:1.5rem;}
+.form-error{color:var(--danger);font-size:.85rem;margin-top:.4rem;min-height:1rem;}
+
+/* ── Options list in modal ── */
+.options-list{display:flex;flex-direction:column;gap:.4rem;margin-top:.5rem;}
+.option-row{display:flex;gap:.5rem;align-items:center;}
+.option-row input{flex:1;}
+.btn-add-option{background:none;border:1.5px dashed var(--primary);color:var(--primary);padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-family:Tajawal,sans-serif;font-size:.85rem;font-weight:700;margin-top:.4rem;}
+
+/* ── Share modal ── */
+.share-box{background:#f8f9fa;border:2px dashed #ccc;border-radius:12px;padding:1rem 1.2rem;font-family:monospace;font-size:.82rem;word-break:break-all;direction:ltr;text-align:left;color:#333;margin-bottom:1rem;}
+.copy-btn{width:100%;padding:.7rem;background:var(--success);color:#fff;border:none;border-radius:10px;font-family:Tajawal,sans-serif;font-size:1rem;font-weight:700;cursor:pointer;}
+.copy-btn:hover{background:#218838;}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:3rem;color:#bbb;}
+.empty-state i{font-size:3rem;display:block;margin-bottom:.8rem;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:#2c3e50;color:#fff;padding:.8rem 2rem;border-radius:30px;font-size:1rem;font-weight:600;z-index:9999;opacity:0;transition:all .3s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.warn{background:var(--danger);}
+
+@media(max-width:650px){
+  header{padding:1rem;}
+  .container{padding:1rem .7rem;}
+  .form-card{flex-direction:column;align-items:flex-start;}
+  .tab-btn{font-size:.82rem;}
+  .admin-badge{display:none;}
+}
+</style>
 </head>
 <body>
-    <h1>Instruction Cycle and Von Neumann Architecture</h1>
-    
-    <h2>الاسم : هند رياض مراد</h2>
-    <h2>ID: 42024641</h2>
 
+<!-- Auth -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div style="font-size:2.8rem;margin-bottom:.4rem">📋</div>
+    <h1>إدارة الفورمات</h1>
+    <p>The Process — Form Admin</p>
+    <input type="email"    id="adminEmail" class="auth-input" placeholder="admin@theprocess.com" style="text-align:right">
+    <input type="password" id="adminPass"  class="auth-input" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter')submitAuth()">
+    <button class="auth-btn" id="loginBtn" onclick="submitAuth()"><i class="fas fa-lock-open"></i> دخول</button>
+    <div id="authError"></div>
+  </div>
+</div>
 
-    <div class="highlight-box">
-        <p><strong></strong> In this report, we will thoroughly explain the concept of the Instruction Cycle, which is considered the core of any operation within a computer. We will also discuss the key elements of the classical architecture (Von Neumann Architecture) and understand how software programs are translated into instructions that control the hardware using the Control Unit (CU).</p>
+<!-- App -->
+<div id="app">
+  <header>
+    <div class="header-title">📋 إدارة <span>الفورمات</span></div>
+    <div class="header-right">
+      <span class="admin-badge" id="adminEmailBadge"></span>
+      <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tabForms"     onclick="switchTab('forms')">📋 الفورمات</button>
+      <button class="tab-btn"        id="tabResponses" onclick="switchTab('responses')">📊 الإجابات</button>
     </div>
 
-    <h2>1. Overview of Computer Functions and Component Connections</h2>
-    <p>A computer consists of interconnected components that work together to execute programs. These components include:</p>
-    <ul>
-        <li>Control Unit (CU)</li>
-        <li>Arithmetic Logic Unit (ALU)</li>
-        <li>Main Memory</li>
-        <li>Input/Output Units (I/O Units)</li>
-    </ul>
-
-    <h2>2. Von Neumann Architecture</h2>
-    <p>Most modern computers are based on this architecture, which is built on three key principles:</p>
-    <ol>
-        <li>Storing data and instructions in the same readable/writable memory.</li>
-        <li>Accessing any memory location using a direct address, regardless of content type.</li>
-        <li>Executing instructions sequentially, unless altered by control instructions (e.g., jump).</li>
-    </ol>
-
-    <h2>3. Program Concept</h2>
-    <p>There are two approaches to building systems that perform specific tasks:</p>
-    
-    <div class="concept-box">
-        <h3>A. Special-Purpose Hardware</h3>
-        <ul>
-            <li>Logical components are connected in a specific way to perform one dedicated task.</li>
-            <li>To change the task, hardware rewiring is required → not flexible.</li>
-        </ul>
-    </div>
-    
-    <div class="concept-box">
-        <h3>B. General-Purpose Hardware</h3>
-        <ul>
-            <li>A general system is built and programmed using control signals sent through software commands.</li>
-            <li>Flexible, as functionality can be changed by altering the program.</li>
-        </ul>
+    <!-- ══ FORMS TAB ══ -->
+    <div id="panelForms">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-list-alt"></i> كل الفورمات</h2>
+          <button class="btn btn-primary" onclick="openNewFormModal()"><i class="fas fa-plus"></i> فورم جديد</button>
+        </div>
+        <div class="card-body">
+          <div class="forms-grid" id="formsList">
+            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>جاري التحميل...</p></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <h2>4. What is a Program?</h2>
-    <p>A program is simply:</p>
-    <ul>
-        <li>A sequence of steps,</li>
-        <li>Each step performs an arithmetic or logical operation,</li>
-        <li>Each operation is linked to a specific opcode (e.g., ADD = 9D, MOVE = E3).</li>
-    </ul>
-    <p>The Control Unit (CU) receives the opcode and generates the corresponding control signals.</p>
-
-    <h2>5. Main Computer Components and Their Functions</h2>
-    <ul>
-        <li><strong>Control Unit (CU):</strong> Interprets instructions and generates control signals.</li>
-        <li><strong>Arithmetic Logic Unit (ALU):</strong> Performs logical and arithmetic operations.</li>
-        <li><strong>Main Memory (MM):</strong> Temporarily stores data and instructions.</li>
-        <li><strong>Input/Output Units (I/O):</strong> Interact with the user and peripheral devices.</li>
-    </ul>
-
-    <h2>6. The Instruction Cycle</h2>
-    <p>It consists of two main phases:</p>
-    
-    <div class="highlight-box">
-        <h3>A. Fetch Cycle</h3>
-        <p><strong>Program Counter (PC):</strong> Holds the address of the next instruction.</p>
-        <p><strong>Steps:</strong></p>
-        <ol>
-            <li>The processor reads the instruction from the memory location pointed to by the PC.</li>
-            <li>The instruction is loaded into the Instruction Register (IR).</li>
-            <li>The PC is incremented automatically.</li>
-        </ol>
+    <!-- ══ RESPONSES TAB ══ -->
+    <div id="panelResponses" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <h2><i class="fas fa-poll"></i> إجابات الطلاب</h2>
+          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <select id="responseFormSelect" onchange="loadResponses()" style="padding:.45rem .8rem;border:2px solid var(--border);border-radius:8px;font-family:Tajawal,sans-serif;font-size:.88rem;">
+              <option value="">— اختر الفورم —</option>
+            </select>
+            <button class="btn btn-sm btn-secondary" onclick="exportResponsesCSV()"><i class="fas fa-download"></i> تصدير CSV</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="responsesContainer">
+            <div class="empty-state"><i class="fas fa-poll"></i><p>اختر فورم لتشوف إجاباته</p></div>
+          </div>
+        </div>
+      </div>
     </div>
-    
-    <div class="highlight-box">
-        <h3>B. Execute Cycle</h3>
-        <p>The processor interprets the instruction in the IR and performs one of the following based on the instruction type:</p>
-        <ul>
-            <li>Transfer data between memory and CPU.</li>
-            <li>Execute arithmetic or logical operations.</li>
-            <li>Transfer data to/from I/O units.</li>
-            <li>Control the program flow (e.g., jump).</li>
-        </ul>
+  </div>
+</div>
+
+<!-- ══ Modal: New/Edit Form ══ -->
+<div class="modal-overlay" id="formModal" style="display:none" onclick="if(event.target===this)closeFormModal()">
+  <div class="modal">
+    <h2 id="formModalTitle">➕ فورم جديد</h2>
+    <div class="form-group">
+      <label>📝 عنوان الفورم *</label>
+      <input type="text" id="fTitle" placeholder="مثال: استبيان الفصل الأول">
+    </div>
+    <div class="form-group">
+      <label>📄 وصف (اختياري)</label>
+      <textarea id="fDesc" rows="2" placeholder="وصف مختصر للفورم"></textarea>
     </div>
 
-    <h2>7. Graphical Representation of the Instruction Cycle</h2>
-    <p>An example is used to illustrate the cycle:</p>
-    <p><strong>Instruction:</strong> Add locA, R0<br>
-    <strong>Assumptions:</strong> Memory at locA = 7, R0 = 10</p>
-    <p><strong>Execution Steps:</strong></p>
-    <ol>
-        <li>PC = 1200 → Instruction is fetched.</li>
-        <li>Instruction is loaded into IR.</li>
-        <li>Interpreted as: "Add the value at locA to R0."</li>
-        <li>Value at locA is fetched from memory.</li>
-        <li>Operation executed: R0 = R0 + locA = 10 + 7 = 17</li>
-    </ol>
+    <hr style="margin:1.2rem 0;border:none;border-top:2px solid var(--border);">
 
-    <h2>8. Hypothetical Machine</h2>
-    <p>An example of a hypothetical machine is introduced to demonstrate how instructions are built:</p>
-    <ul>
-        <li>Each instruction consists of an opcode and a memory address.</li>
-    </ul>
-    <p><strong>Examples of Instructions:</strong><br>
-    0001: Load AC from memory<br>
-    0101: Add to AC from memory</p>
-    <p><strong>Important CPU Registers:</strong></p>
-    <ul>
-        <li>PC (Program Counter)</li>
-        <li>IR (Instruction Register)</li>
-        <li>AC (Accumulator)</li>
-    </ul>
-
-    <h2>9. Instruction Set Table</h2>
-    <table class="instruction-table">
-        <thead>
-            <tr>
-                <th>Binary Opcode</th>
-                <th>Instruction Name</th>
-                <th> Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>0001</td>
-                <td>LOAD AC from memory</td>
-                <td>Load the value from memory into the AC register</td>
-            </tr>
-            <tr>
-                <td>0010</td>
-                <td>STORE AC to memory</td>
-                <td>Store the AC value into memory</td>
-            </tr>
-            <tr>
-                <td>0101</td>
-                <td>ADD to AC from memory</td>
-                <td>Add a memory value to the AC register</td>
-            </tr>
-            <tr>
-                <td>0110</td>
-                <td>SUB from AC from memory</td>
-                <td>Subtract a memory value from the AC register</td>
-            </tr>
-            <tr>
-                <td>1000</td>
-                <td>JUMP to address</td>
-                <td>Jump to a specific memory address</td>
-            </tr>
-            <tr>
-                <td>1001</td>
-                <td>JUMP if AC is zero</td>
-                <td>Jump if AC equals zero</td>
-            </tr>
-            <tr>
-                <td>1010</td>
-                <td>INPUT to AC</td>
-                <td>Take input into the AC register</td>
-            </tr>
-            <tr>
-                <td>1011</td>
-                <td>OUTPUT from AC</td>
-                <td>Output AC value to the screen</td>
-            </tr>
-            <tr>
-                <td>1111</td>
-                <td>HALT</td>
-                <td>Stop program execution</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div class="conclusion">
-        <p>The instruction cycle is the heart of how a computer operates. By understanding how an instruction is fetched, decoded, and executed, we gain insight into how programs work behind the scenes. This foundational knowledge is essential in the study of computer architecture, performance enhancement, and processor development.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+      <strong style="font-size:.95rem">❓ الأسئلة</strong>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-sm btn-purple" onclick="addQuestion('mcq')"><i class="fas fa-list"></i> MCQ</button>
+        <button class="btn btn-sm" style="background:var(--purple);color:#fff;padding:.35rem .75rem;font-size:.82rem;border-radius:7px" onclick="addQuestion('text')"><i class="fas fa-font"></i> نص</button>
+      </div>
     </div>
+
+    <div id="questionsBuilder" class="q-list"></div>
+    <div id="formModalError" class="form-error"></div>
+
+    <div class="modal-footer">
+      <button class="btn" style="background:#f0f0f0;color:#333" onclick="closeFormModal()">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveForm()"><i class="fas fa-save"></i> حفظ الفورم</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Modal: Share ══ -->
+<div class="modal-overlay" id="shareModal" style="display:none" onclick="if(event.target===this)closeShareModal()">
+  <div class="modal" style="max-width:480px">
+    <h2>🔗 شير اللينك للطلاب</h2>
+    <p style="color:var(--muted);font-size:.88rem;margin-bottom:1rem">الطالب يفتح اللينك ده، يكتب كوده، بياناته بتتملى أوتوماتيك وبيجاوب على الفورم.</p>
+    <div class="share-box" id="shareLinkBox"></div>
+    <button class="copy-btn" onclick="copyLink()"><i class="fas fa-copy"></i> نسخ اللينك</button>
+    <div style="margin-top:.8rem;text-align:center">
+      <button class="btn btn-sm btn-secondary" onclick="closeShareModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyBXsX0v_7p8CHDFiTUm4XkQsoZIqGueAOk",
+  authDomain:"the-process-5d196.firebaseapp.com",
+  databaseURL:"https://the-process-5d196-default-rtdb.firebaseio.com",
+  projectId:"the-process-5d196",
+  storageBucket:"the-process-5d196.firebasestorage.app",
+  messagingSenderId:"96415822332",
+  appId:"1:96415822332:web:2be476bee2e474383d8279"
+});
+var db   = firebase.database();
+var auth = firebase.auth();
+
+// ── Auth ──────────────────────────────────────────────────
+auth.onAuthStateChanged(function(user){
+  if(user){
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('adminEmailBadge').textContent=user.email;
+    loadForms();
+  } else {
+    document.getElementById('authScreen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+
+function submitAuth(){
+  var email=document.getElementById('adminEmail').value.trim();
+  var pass =document.getElementById('adminPass').value;
+  var errEl=document.getElementById('authError');
+  var btn  =document.getElementById('loginBtn');
+  if(!email||!pass){errEl.textContent='⚠️ أدخل الإيميل وكلمة المرور';return;}
+  btn.disabled=true; btn.textContent='...جاري الدخول'; errEl.textContent='';
+  auth.signInWithEmailAndPassword(email,pass).catch(function(err){
+    var msg='❌ خطأ في تسجيل الدخول';
+    if(err.code==='auth/invalid-credential'||err.code==='auth/wrong-password'||err.code==='auth/user-not-found') msg='❌ الإيميل أو كلمة المرور غلط!';
+    else if(err.code==='auth/too-many-requests') msg='⏳ محاولات كتير، انتظر شوية';
+    errEl.textContent=msg;
+    btn.disabled=false; btn.textContent='دخول';
+    document.getElementById('adminPass').value='';
+  });
+}
+function doLogout(){ auth.signOut(); }
+
+// ── State ─────────────────────────────────────────────────
+var allForms={};
+var currentFormId=null; // for edit
+var questions=[];       // builder state
+var qCounter=0;
+var allStudents={};
+var currentResponseFormId=null;
+var currentResponseForm=null;
+
+// ── Tabs ──────────────────────────────────────────────────
+function switchTab(tab){
+  document.getElementById('panelForms').style.display    =tab==='forms'?'block':'none';
+  document.getElementById('panelResponses').style.display=tab==='responses'?'block':'none';
+  document.getElementById('tabForms').className    ='tab-btn'+(tab==='forms'?' active':'');
+  document.getElementById('tabResponses').className='tab-btn'+(tab==='responses'?' active':'');
+  if(tab==='responses') populateResponseSelect();
+}
+
+// ── Load Forms ────────────────────────────────────────────
+function loadForms(){
+  db.ref('forms').on('value',function(snap){
+    allForms=snap.val()||{};
+    renderForms();
+    populateResponseSelect();
+  });
+  // preload students for response display
+  db.ref('students').once('value',function(s){ allStudents=s.val()||{}; });
+}
+
+function renderForms(){
+  var el=document.getElementById('formsList');
+  var entries=Object.entries(allForms);
+  if(!entries.length){
+    el.innerHTML='<div class="empty-state"><i class="fas fa-clipboard"></i><p>مفيش فورمات لحد دلوقتي — ابدأ بفورم جديد!</p></div>';
+    return;
+  }
+  entries.sort(function(a,b){return (b[1].createdAt||0)-(a[1].createdAt||0);});
+  el.innerHTML='';
+  entries.forEach(function(e){
+    var fid=e[0],f=e[1];
+    var qCount=Object.keys(f.questions||{}).length;
+    var div=document.createElement('div');
+    div.className='form-card'+(f.active===false?' inactive':'');
+    div.innerHTML=
+      '<div class="form-info">'+
+        '<h3>'+escHtml(f.title)+'</h3>'+
+        '<p>'+(f.description?escHtml(f.description)+' &nbsp;·&nbsp; ':'')+
+          '<span class="badge badge-purple">'+qCount+' سؤال</span> &nbsp;'+
+          (f.active!==false?'<span class="badge badge-green">✅ نشط</span>':'<span class="badge badge-gray">⏸ موقوف</span>')+
+        '</p>'+
+      '</div>'+
+      '<div class="form-actions">'+
+        '<button class="btn-icon blue" title="عدل الفورم" onclick="openEditFormModal(\''+fid+'\')"><i class="fas fa-edit"></i></button>'+
+        '<button class="btn-icon green" title="شير اللينك" onclick="openShareModal(\''+fid+'\')"><i class="fas fa-share-alt"></i></button>'+
+        '<button class="btn-icon purple" title="الإجابات" onclick="switchTab(\'responses\');setTimeout(function(){document.getElementById(\'responseFormSelect\').value=\''+fid+'\';loadResponses();},100)"><i class="fas fa-poll"></i></button>'+
+        '<button class="btn-icon" title="'+(f.active!==false?'إيقاف':'تفعيل')+'" onclick="toggleActive(\''+fid+'\','+f.active+')" style="background:#fff8e1;color:#e6a817"><i class="fas fa-'+(f.active!==false?'pause':'play')+'"></i></button>'+
+        '<button class="btn-icon red" title="حذف" onclick="deleteForm(\''+fid+'\',\''+escHtml(f.title)+'\')"><i class="fas fa-trash"></i></button>'+
+      '</div>';
+    el.appendChild(div);
+  });
+}
+
+// ── New / Edit Form Modal ─────────────────────────────────
+function openNewFormModal(){
+  currentFormId=null; questions=[]; qCounter=0;
+  document.getElementById('formModalTitle').textContent='➕ فورم جديد';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fDesc').value='';
+  document.getElementById('questionsBuilder').innerHTML='';
+  document.getElementById('formModalError').textContent='';
+  document.getElementById('formModal').style.display='flex';
+}
+
+function openEditFormModal(fid){
+  var f=allForms[fid];
+  if(!f) return;
+  currentFormId=fid; questions=[]; qCounter=0;
+  document.getElementById('formModalTitle').textContent='✏️ تعديل الفورم';
+  document.getElementById('fTitle').value=f.title||'';
+  document.getElementById('fDesc').value=f.description||'';
+  document.getElementById('questionsBuilder').innerHTML='';
+  document.getElementById('formModalError').textContent='';
+  // load existing questions
+  var qs=Object.entries(f.questions||{}).sort(function(a,b){return (a[1].order||0)-(b[1].order||0);});
+  qs.forEach(function(e){
+    var q=e[1];
+    var qid=addQuestion(q.type, false);
+    document.getElementById('qtext_'+qid).value=q.text||'';
+    if(q.type==='mcq' && q.options){
+      // remove default two options and rebuild
+      var container=document.getElementById('opts_'+qid);
+      container.innerHTML='';
+      q.options.forEach(function(opt){
+        addOptionRow(qid, opt);
+      });
+    }
+  });
+  document.getElementById('formModal').style.display='flex';
+}
+
+function closeFormModal(){document.getElementById('formModal').style.display='none';}
+
+// ── Question Builder ───────────────────────────────────────
+function addQuestion(type, focus){
+  if(focus===undefined) focus=true;
+  qCounter++;
+  var qid='q'+qCounter;
+  questions.push({id:qid, type:type});
+  var container=document.getElementById('questionsBuilder');
+  var div=document.createElement('div');
+  div.className='q-item';
+  div.id='qitem_'+qid;
+  div.innerHTML=
+    '<div class="q-item-header">'+
+      '<span><span class="q-type-badge '+(type==='mcq'?'q-type-mcq':'q-type-text')+'">'+(type==='mcq'?'اختيار متعدد':'نص حر')+'</span></span>'+
+      '<div style="display:flex;gap:.3rem">'+
+        '<button class="btn-icon" onclick="moveQ(\''+qid+'\',-1)" title="لأعلى"><i class="fas fa-arrow-up"></i></button>'+
+        '<button class="btn-icon" onclick="moveQ(\''+qid+'\',1)" title="لأسفل"><i class="fas fa-arrow-down"></i></button>'+
+        '<button class="btn-icon red" onclick="removeQ(\''+qid+'\')" title="حذف"><i class="fas fa-trash"></i></button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="form-group" style="margin-bottom:.6rem">'+
+      '<input type="text" id="qtext_'+qid+'" placeholder="اكتب السؤال هنا..." style="font-weight:600">'+
+    '</div>'+
+    (type==='mcq'?
+      '<div id="opts_'+qid+'" class="options-list"></div>'+
+      '<button class="btn-add-option" onclick="addOptionRow(\''+qid+'\')"><i class="fas fa-plus"></i> خيار جديد</button>'
+    : '<textarea id="qtext_open_'+qid+'" rows="1" placeholder="الطالب هيكتب إجابته هنا (preview)" disabled style="background:#f8f9fa;color:#aaa;font-size:.82rem;resize:none;margin-top:.3rem"></textarea>'
+    );
+  container.appendChild(div);
+  if(type==='mcq'){
+    addOptionRow(qid);
+    addOptionRow(qid);
+  }
+  if(focus) document.getElementById('qtext_'+qid).focus();
+  return qid;
+}
+
+function addOptionRow(qid, val){
+  var container=document.getElementById('opts_'+qid);
+  var row=document.createElement('div');
+  row.className='option-row';
+  var oid='opt_'+qid+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  row.id=oid;
+  row.innerHTML=
+    '<input type="text" placeholder="خيار..." value="'+(val?escHtml(val):'')+'">'+
+    '<button class="btn-icon red" onclick="document.getElementById(\''+oid+'\').remove()" style="flex-shrink:0"><i class="fas fa-times"></i></button>';
+  container.appendChild(row);
+}
+
+function removeQ(qid){
+  document.getElementById('qitem_'+qid).remove();
+  questions=questions.filter(function(q){return q.id!==qid;});
+}
+
+function moveQ(qid, dir){
+  var items=Array.from(document.getElementById('questionsBuilder').children);
+  var idx=items.findIndex(function(el){return el.id==='qitem_'+qid;});
+  var to=idx+dir;
+  if(to<0||to>=items.length) return;
+  var parent=document.getElementById('questionsBuilder');
+  if(dir===-1) parent.insertBefore(items[idx],items[to]);
+  else parent.insertBefore(items[to],items[idx]);
+}
+
+// ── Save Form ─────────────────────────────────────────────
+function saveForm(){
+  var title=document.getElementById('fTitle').value.trim();
+  var desc =document.getElementById('fDesc').value.trim();
+  var errEl=document.getElementById('formModalError');
+  if(!title){errEl.textContent='⚠️ العنوان مطلوب!';return;}
+
+  // collect questions from DOM
+  var qItems=Array.from(document.getElementById('questionsBuilder').children);
+  if(!qItems.length){errEl.textContent='⚠️ أضف سؤال واحد على الأقل!';return;}
+
+  var qData={};
+  var valid=true;
+  qItems.forEach(function(el,i){
+    var qid=el.id.replace('qitem_','');
+    var qObj=questions.find(function(q){return q.id===qid;});
+    if(!qObj) return;
+    var text=(document.getElementById('qtext_'+qid).value||'').trim();
+    if(!text){errEl.textContent='⚠️ كل الأسئلة لازم يكون ليها نص!';valid=false;return;}
+    var entry={text:text, type:qObj.type, order:i+1};
+    if(qObj.type==='mcq'){
+      var opts=Array.from(document.getElementById('opts_'+qid).querySelectorAll('.option-row input'))
+        .map(function(inp){return inp.value.trim();}).filter(Boolean);
+      if(opts.length<2){errEl.textContent='⚠️ كل سؤال اختيار لازم يكون فيه خيارين على الأقل!';valid=false;return;}
+      entry.options=opts;
+    }
+    var key='q_'+(i+1)+'_'+qid;
+    qData[key]=entry;
+  });
+  if(!valid) return;
+
+  var fid=currentFormId||'form_'+Date.now();
+  var existing=allForms[fid]||{};
+  var data={
+    title:title, description:desc,
+    active: existing.active!==undefined ? existing.active : true,
+    createdAt: existing.createdAt||Date.now(),
+    updatedAt: Date.now(),
+    questions: qData
+  };
+
+  db.ref('forms/'+fid).set(data).then(function(){
+    closeFormModal();
+    showToast(currentFormId?'✅ تم تحديث الفورم!':'✅ تم إنشاء الفورم!');
+  }).catch(function(e){errEl.textContent='❌ '+e.message;});
+}
+
+function toggleActive(fid, current){
+  db.ref('forms/'+fid+'/active').set(current===false);
+  showToast(current===false?'✅ تم تفعيل الفورم':'⏸ تم إيقاف الفورم');
+}
+
+function deleteForm(fid, title){
+  if(!confirm('هتحذف الفورم "'+title+'" وكل إجاباته؟')) return;
+  db.ref('forms/'+fid).remove();
+  db.ref('formResponses/'+fid).remove();
+  showToast('🗑️ تم الحذف!','warn');
+}
+
+// ── Share Modal ───────────────────────────────────────────
+var currentShareFid=null;
+function openShareModal(fid){
+  currentShareFid=fid;
+  var base=window.location.href.replace('form-admin.html','form.html');
+  // if served from file://, give a friendly note
+  var link=base+'?form='+fid;
+  document.getElementById('shareLinkBox').textContent=link;
+  document.getElementById('shareModal').style.display='flex';
+}
+function closeShareModal(){document.getElementById('shareModal').style.display='none';}
+function copyLink(){
+  var txt=document.getElementById('shareLinkBox').textContent;
+  navigator.clipboard.writeText(txt).then(function(){showToast('✅ تم نسخ اللينك!');}).catch(function(){
+    // fallback
+    var ta=document.createElement('textarea');
+    ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('✅ تم نسخ اللينك!');
+  });
+}
+
+// ── Responses ─────────────────────────────────────────────
+function populateResponseSelect(){
+  var sel=document.getElementById('responseFormSelect');
+  var prev=sel.value;
+  sel.innerHTML='<option value="">— اختر الفورم —</option>';
+  Object.entries(allForms).sort(function(a,b){return (b[1].createdAt||0)-(a[1].createdAt||0);}).forEach(function(e){
+    var o=document.createElement('option');
+    o.value=e[0]; o.textContent=e[1].title||e[0];
+    sel.appendChild(o);
+  });
+  if(prev) sel.value=prev;
+}
+
+function loadResponses(){
+  var fid=document.getElementById('responseFormSelect').value;
+  var container=document.getElementById('responsesContainer');
+  if(!fid){container.innerHTML='<div class="empty-state"><i class="fas fa-poll"></i><p>اختر فورم</p></div>';return;}
+  currentResponseFormId=fid;
+  currentResponseForm=allForms[fid]||{};
+  container.innerHTML='<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>جاري التحميل...</p></div>';
+  db.ref('formResponses/'+fid).once('value',function(snap){
+    var data=snap.val()||{};
+    renderResponses(data);
+  });
+}
+
+function renderResponses(data){
+  var container=document.getElementById('responsesContainer');
+  var questions=currentResponseForm.questions||{};
+  var qList=Object.entries(questions).sort(function(a,b){return (a[1].order||0)-(b[1].order||0);});
+  var entries=Object.entries(data);
+  if(!entries.length){
+    container.innerHTML='<div class="empty-state"><i class="fas fa-inbox"></i><p>لا يوجد إجابات لحد دلوقتي</p></div>';
+    return;
+  }
+  entries.sort(function(a,b){return (b[1].submittedAt||b[1].updatedAt||0)-(a[1].submittedAt||a[1].updatedAt||0);});
+  var html='<div style="margin-bottom:.8rem;font-size:.88rem;color:var(--muted)">'+entries.length+' إجابة</div><div class="responses-grid">';
+  entries.forEach(function(e){
+    var code=e[0], resp=e[1];
+    var student=allStudents[code]||{};
+    var name=resp.studentName||student.name||code;
+    var at=resp.updatedAt||resp.submittedAt||0;
+    var html2='<div class="response-card" onclick="toggleResponse(\'resp_'+code+'\')">';
+    html2+='<div class="response-header">';
+    html2+='<h4><i class="fas fa-user-circle" style="color:var(--primary);margin-left:.3rem"></i>'+escHtml(name)+'<span style="font-size:.78rem;font-weight:400;color:var(--muted);margin-right:.5rem"> / '+code+'</span></h4>';
+    html2+='<div style="display:flex;gap:.5rem;align-items:center">';
+    html2+='<span style="font-size:.78rem;color:var(--muted)">'+fmtDate(at)+'</span>';
+    html2+='<span class="badge badge-green">'+Object.keys(resp.answers||{}).length+'/'+qList.length+' إجابة</span>';
+    html2+='</div></div>';
+    html2+='<div class="response-detail" id="resp_'+code+'">';
+    qList.forEach(function(qe){
+      var qkey=qe[0], q=qe[1];
+      var ans=(resp.answers||{})[qkey];
+      html2+='<div class="answer-row">';
+      html2+='<div class="q-text">'+escHtml(q.text||'')+'</div>';
+      html2+='<div class="a-text">'+(ans!==undefined&&ans!==''?escHtml(String(ans)):'<span style="color:#bbb">لم يجب</span>')+'</div>';
+      html2+='</div>';
+    });
+    html2+='</div></div>';
+    html+=html2;
+  });
+  html+='</div>';
+  container.innerHTML=html;
+  window._currentResponses=data;
+}
+
+function toggleResponse(id){
+  var el=document.getElementById(id);
+  if(!el) return;
+  el.classList.toggle('open');
+}
+
+// ── Export CSV ────────────────────────────────────────────
+function exportResponsesCSV(){
+  var fid=document.getElementById('responseFormSelect').value;
+  if(!fid||!window._currentResponses){showToast('اختر فورم أولاً','warn');return;}
+  var f=allForms[fid]||{};
+  var qList=Object.entries(f.questions||{}).sort(function(a,b){return (a[1].order||0)-(b[1].order||0);});
+  var headers=['اسم الطالب','كود الدخول','تاريخ الإجابة'].concat(qList.map(function(e){return e[1].text||e[0];}));
+  var rows=['\uFEFF'+headers.join(',')];
+  Object.entries(window._currentResponses).forEach(function(e){
+    var code=e[0], resp=e[1];
+    var student=allStudents[code]||{};
+    var row=[(resp.studentName||student.name||'').replace(/,/g,' '), code, resp.updatedAt?new Date(resp.updatedAt).toLocaleString('ar-EG'):'—'];
+    qList.forEach(function(qe){
+      var ans=(resp.answers||{})[qe[0]];
+      row.push(ans!==undefined?String(ans).replace(/,/g,' '):'');
+    });
+    rows.push(row.join(','));
+  });
+  var blob=new Blob([rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=(f.title||'responses')+'_'+new Date().toISOString().split('T')[0]+'.csv'; a.click();
+  showToast('✅ تم التصدير!');
+}
+
+// ── Utils ─────────────────────────────────────────────────
+function fmtDate(ts){
+  if(!ts) return '—';
+  return new Date(ts).toLocaleDateString('ar-EG')+' '+new Date(ts).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'});
+}
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  setTimeout(function(){t.classList.remove('show');},3000);
+}
+</script>
 </body>
 </html>
